@@ -1,0 +1,238 @@
+version: 2
+
+models:
+  - name: stg_partners
+    columns:
+      - name: partner_id
+        data_tests: [not_null, unique]
+  - name: stg_product_categories
+    columns:
+      - name: category_id
+        data_tests: [not_null, unique]
+  - name: stg_products
+    columns:
+      - name: product_id
+        data_tests: [not_null, unique]
+      - name: category_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_product_categories')
+                field: category_id
+  - name: stg_sale_orders
+    columns:
+      - name: sale_order_id
+        data_tests: [not_null, unique]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['draft', 'confirmed', 'done', 'cancel']
+  - name: stg_sale_order_lines
+    columns:
+      - name: sale_order_line_id
+        data_tests: [not_null, unique]
+      - name: sale_order_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_sale_orders')
+                field: sale_order_id
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+  - name: stg_purchase_orders
+    columns:
+      - name: purchase_order_id
+        data_tests: [not_null, unique]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['draft', 'confirmed', 'received', 'cancel']
+  - name: stg_purchase_order_lines
+    columns:
+      - name: purchase_order_line_id
+        data_tests: [not_null, unique]
+      - name: purchase_order_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_purchase_orders')
+                field: purchase_order_id
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+  - name: stg_mrp_production
+    columns:
+      - name: production_id
+        data_tests: [not_null, unique]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['confirmed', 'in_progress', 'done', 'cancel']
+  - name: stg_stock_moves
+    columns:
+      - name: stock_move_id
+        data_tests: [not_null, unique]
+      - name: move_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['in', 'out']
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['done', 'cancel']
+  - name: stg_invoices
+    columns:
+      - name: invoice_id
+        data_tests: [not_null, unique]
+      - name: invoice_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['in_invoice', 'out_invoice']
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['draft', 'posted', 'paid', 'cancel']
+
+  - name: dim_produit
+    columns:
+      - name: product_id
+        data_tests: [not_null, unique]
+      - name: nom
+        data_tests: [not_null]
+      - name: cout
+        data_tests: [not_null]
+  - name: dim_client
+    columns:
+      - name: client_id
+        data_tests: [not_null, unique]
+  - name: dim_fournisseur
+    columns:
+      - name: fournisseur_id
+        data_tests: [not_null, unique]
+  - name: dim_temps
+    columns:
+      - name: date_id
+        data_tests: [not_null, unique]
+      - name: date
+        data_tests: [not_null]
+  - name: dim_entrepot
+    columns:
+      - name: entrepot_id
+        data_tests: [not_null, unique]
+
+  - name: fact_ventes
+    columns:
+      - name: sale_order_line_id
+        data_tests: [not_null, unique]
+      - name: quantite
+        data_tests: [not_null]
+      - name: chiffre_affaires
+        data_tests: [not_null]
+      - name: marge_brute
+        data_tests: [not_null]
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_produit')
+                field: product_id
+      - name: client_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_client')
+                field: client_id
+      - name: date_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_temps')
+                field: date_id
+  - name: fact_achats
+    columns:
+      - name: purchase_order_line_id
+        data_tests: [not_null, unique]
+      - name: quantite
+        data_tests: [not_null]
+      - name: montant
+        data_tests: [not_null]
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_produit')
+                field: product_id
+      - name: fournisseur_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_fournisseur')
+                field: fournisseur_id
+      - name: date_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_temps')
+                field: date_id
+  - name: fact_production
+    columns:
+      - name: production_id
+        data_tests: [not_null, unique]
+      - name: qte_produite
+        data_tests: [not_null]
+      - name: duree_fabrication_heures
+        data_tests: [not_null]
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_produit')
+                field: product_id
+      - name: date_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_temps')
+                field: date_id
+  - name: fact_stocks
+    columns:
+      - name: stock_move_id
+        data_tests: [not_null, unique]
+      - name: qte_entree
+        data_tests: [not_null]
+      - name: qte_sortie
+        data_tests: [not_null]
+      - name: solde
+        data_tests: [not_null]
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_produit')
+                field: product_id
+      - name: entrepot_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_entrepot')
+                field: entrepot_id
+      - name: date_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_temps')
+                field: date_id

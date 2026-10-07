@@ -1,8 +1,7 @@
 version: 2
-
 sources:
   - name: odoo_raw
-    description: Tables sources chargees dans la zone Raw de ClickHouse par le DAG d'extraction Airflow.
+    description: Tables PostgreSQL copiees dans la zone Raw ClickHouse par l'extraction.
     schema: odoo_analytics
     tables:
       - name: res_partner
