@@ -1,0 +1,161 @@
+# ==================================================================
+#  odoo-bigdata-pipeline : infrastructure Docker
+#  PostgreSQL 15 (source Odoo) -> Airflow 2.9 -> ClickHouse -> Metabase
+# ==================================================================
+name: odoo-bigdata-pipeline
+
+services:
+
+  # ----------------------------------------------------------------
+  # 1. PostgreSQL 15 : simule la base Odoo
+  #    (heberge aussi les bases techniques "airflow" et "metabase")
+  # ----------------------------------------------------------------
+  postgres:
+    image: postgres:15
+    container_name: odoo_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo123
+      POSTGRES_DB: odoo_db
+      TZ: Africa/Abidjan
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d odoo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pipeline_net
+
+  # ----------------------------------------------------------------
+  # 2. ClickHouse : Data Warehouse analytique
+  # ----------------------------------------------------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: clickhouse_dwh
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: odoo_analytics
+      # Utilisateur "default" sans mot de passe accessible depuis le reseau
+      # (acceptable en environnement local de developpement uniquement)
+      CLICKHOUSE_SKIP_USER_SETUP: "1"
+      TZ: Africa/Abidjan
+    ports:
+      - "8123:8123"   # HTTP (Play UI, Metabase)
+      - "9000:9000"   # Natif (dbt, clickhouse-driver)
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pipeline_net
+
+  # ----------------------------------------------------------------
+  # 3. Apache Airflow 2.9 : orchestration (LocalExecutor)
+  #    Image personnalisee : + clickhouse-driver + dbt dans un venv isole
+  # ----------------------------------------------------------------
+  airflow:
+    build:
+      context: ./docker/airflow
+    image: odoo-pipeline/airflow:2.9.3
+    container_name: airflow
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    environment:
+      # --- Coeur Airflow ---
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow123@odoo_postgres:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__CORE__DEFAULT_TIMEZONE: Africa/Abidjan
+      AIRFLOW__CORE__FERNET_KEY: ""
+      AIRFLOW__WEBSERVER__SECRET_KEY: odoo-bigdata-pipeline-secret
+      AIRFLOW__WEBSERVER__WORKERS: "2"
+      AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: Africa/Abidjan
+      AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "30"
+      # --- Initialisation automatique (base + compte admin) ---
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      _AIRFLOW_WWW_USER_FIRSTNAME: Admin
+      _AIRFLOW_WWW_USER_LASTNAME: Pipeline
+      _AIRFLOW_WWW_USER_EMAIL: admin@progistack.local
+      # --- Connexions utilisees par les DAGs ---
+      AIRFLOW_CONN_ODOO_POSTGRES: postgresql://odoo:odoo123@odoo_postgres:5432/odoo_db
+      CLICKHOUSE_HOST: clickhouse_dwh
+      CLICKHOUSE_PORT: "9000"
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_DATABASE: odoo_analytics
+      # --- dbt ---
+      DBT_PROJECT_DIR: /opt/airflow/dbt/odoo_dwh
+      DBT_PROFILES_DIR: /opt/airflow/dbt/odoo_dwh
+      TZ: Africa/Abidjan
+    command: ["bash", "-c", "airflow scheduler & exec airflow webserver"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./dbt:/opt/airflow/dbt
+      - ./scripts:/opt/airflow/scripts
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - pipeline_net
+
+  # ----------------------------------------------------------------
+  # 4. Metabase : visualisation BI (driver ClickHouse integre)
+  # ----------------------------------------------------------------
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: odoo_postgres
+      MB_DB_PORT: "5432"
+      MB_DB_DBNAME: metabase
+      MB_DB_USER: metabase
+      MB_DB_PASS: metabase123
+      JAVA_TIMEZONE: Africa/Abidjan
+      MB_SITE_LOCALE: fr
+    ports:
+      - "3000:3000"
+    networks:
+      - pipeline_net
+
+volumes:
+  postgres_data:
+  clickhouse_data:
+
+networks:
+  pipeline_net:
+    driver: bridge

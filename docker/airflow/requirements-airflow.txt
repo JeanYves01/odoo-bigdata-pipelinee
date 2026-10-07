@@ -1,0 +1,2 @@
+# Paquets ajoutes a l'image Airflow (environnement principal)
+clickhouse-driver>=0.2.10,<0.3
