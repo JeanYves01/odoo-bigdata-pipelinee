@@ -1,0 +1,17 @@
+# dbt-clickhouse local profile. Schema is the ClickHouse database.
+odoo_dwh:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      driver: native
+      host: localhost
+      port: 9000
+      user: default
+      password: ''
+      schema: odoo_analytics
+      secure: false
+      verify: false
+      threads: 1
+      connect_timeout: 10
+      send_receive_timeout: 300

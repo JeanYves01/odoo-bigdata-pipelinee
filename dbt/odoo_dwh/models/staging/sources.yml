@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: odoo_raw
+    description: Tables sources chargees dans la zone Raw de ClickHouse par le DAG d'extraction Airflow.
+    schema: odoo_analytics
+    tables:
+      - name: res_partner
+        identifier: raw_res_partner
+      - name: product_category
+        identifier: raw_product_category
+      - name: product_template
+        identifier: raw_product_template
+      - name: sale_order
+        identifier: raw_sale_order
+      - name: sale_order_line
+        identifier: raw_sale_order_line
+      - name: purchase_order
+        identifier: raw_purchase_order
+      - name: purchase_order_line
+        identifier: raw_purchase_order_line
+      - name: mrp_production
+        identifier: raw_mrp_production
+      - name: stock_move
+        identifier: raw_stock_move
+      - name: account_move
+        identifier: raw_account_move
