@@ -1,0 +1,24 @@
+# ============================================================
+# Environnement local Python 3.11 - odoo-bigdata-pipeline
+# Versions figees pour garantir la reproductibilite
+# ============================================================
+
+# --- dbt (transformation) ---
+# dbt-clickhouse 1.10.1 est teste avec dbt-core 1.11.x
+# (dbt-core 1.12 exige dbt-adapters >= 1.24, incompatible)
+dbt-core==1.11.*
+dbt-clickhouse==1.10.1
+
+# --- Connecteurs bases de donnees ---
+psycopg2-binary>=2.9,<3.0
+clickhouse-driver>=0.2.10
+clickhouse-connect>=0.10.0
+sqlalchemy>=2.0,<2.1
+
+# --- Generation et manipulation de donnees ---
+faker>=30.0
+pandas>=2.2,<3.0
+numpy>=1.26,<3.0
+
+# --- Utilitaires ---
+python-dotenv>=1.0

@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-wsl",
+        "redhat.vscode-yaml",
+        "innoverio.vscode-dbt-power-user",
+        "eamodio.gitlens"
+    ]
+}
