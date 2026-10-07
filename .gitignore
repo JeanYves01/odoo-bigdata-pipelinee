@@ -1,0 +1,42 @@
+# ===== Python =====
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ===== Secrets / variables d'environnement =====
+.env
+*.env
+!.env.example
+
+# ===== Airflow =====
+airflow/logs/*
+!airflow/logs/.gitkeep
+airflow/*.pid
+airflow/airflow.db
+airflow/airflow.cfg
+airflow/webserver_config.py
+
+# ===== dbt =====
+dbt/**/target/
+dbt/**/dbt_packages/
+dbt/**/logs/
+dbt/**/.user.yml
+
+# ===== Donnees generees =====
+data/*
+!data/.gitkeep
+
+# ===== Logs divers =====
+*.log
+
+# ===== IDE / OS =====
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+Thumbs.db
+desktop.ini
+.DS_Store
