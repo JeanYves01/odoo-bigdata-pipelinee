@@ -1,11 +1,12 @@
-# dbt-clickhouse local profile. Schema is the ClickHouse database.
+# La variable est definie par docker-compose dans le conteneur Airflow
+# (clickhouse_dwh) et absente sur Windows (repli sur localhost).
 odoo_dwh:
   target: dev
   outputs:
     dev:
       type: clickhouse
       driver: native
-      host: localhost
+      host: "{{ env_var('CLICKHOUSE_HOST', 'localhost') }}"
       port: 9000
       user: default
       password: ''

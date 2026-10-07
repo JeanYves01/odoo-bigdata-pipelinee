@@ -1,19 +1,21 @@
-# ==================================================================
-#  Image Airflow personnalisee pour odoo-bigdata-pipeline
-#  - Airflow 2.9.3 / Python 3.11
-#  - clickhouse-driver dans l'environnement Airflow (DAG d'extraction)
-#  - dbt-core + dbt-clickhouse dans un venv ISOLE (evite les conflits
-#    de dependances entre Airflow et dbt)
-# ==================================================================
+# Image Airflow personnalisee pour odoo-bigdata-pipeline
 FROM apache/airflow:2.9.3-python3.11
+
+# dbt debug verifie la disponibilite de Git. Installer Git en root, puis
+# revenir a l'utilisateur non-root airflow pour pip et l'execution des DAGs.
+USER root
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 USER airflow
 
-# 1) Paquets supplementaires pour Airflow (version d'Airflow verrouillee)
+# Paquets supplementaires dans l'environnement Airflow
 COPY requirements-airflow.txt /tmp/requirements-airflow.txt
 RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r /tmp/requirements-airflow.txt
 
-# 2) dbt dans un environnement virtuel separe
+# dbt dans un environnement virtuel isole, pour eviter les conflits Airflow/dbt
 RUN python -m venv /home/airflow/dbt_venv \
  && /home/airflow/dbt_venv/bin/pip install --no-cache-dir --upgrade pip \
  && /home/airflow/dbt_venv/bin/pip install --no-cache-dir "dbt-core==1.11.*" "dbt-clickhouse==1.10.1" \
