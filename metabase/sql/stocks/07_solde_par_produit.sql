@@ -1,0 +1,8 @@
+WITH dernier_solde AS (
+  SELECT product_id, argMax(solde, tuple(date, stock_move_id)) AS qte_stock
+  FROM odoo_analytics.fact_stocks GROUP BY product_id
+)
+SELECT p.nom AS produit, d.qte_stock AS solde_estime
+FROM dernier_solde AS d
+INNER JOIN odoo_analytics.dim_produit AS p ON p.product_id = d.product_id
+ORDER BY solde_estime DESC LIMIT 20

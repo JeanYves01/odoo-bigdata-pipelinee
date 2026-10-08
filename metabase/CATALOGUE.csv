@@ -1,0 +1,33 @@
+Dashboard;N;Question;Visualisation;Description
+Ventes;01;ventes/01_ca_total;Number;Chiffre d'affaires des lignes confirmees/terminees
+Ventes;02;ventes/02_marge_brute;Number;Marge brute estimee CA moins cout standard
+Ventes;03;ventes/03_nb_commandes;Number;Commandes distinctes dans le fait ventes
+Ventes;04;ventes/04_panier_moyen;Number;CA divise par commandes distinctes
+Ventes;05;ventes/05_ca_mensuel;Line;Evolution mensuelle du CA
+Ventes;06;ventes/06_top10_clients;Bar;Top 10 clients en CA
+Ventes;07;ventes/07_ca_par_categorie;Bar;CA par categorie de produit
+Ventes;08;ventes/08_marge_mensuelle;Line;Evolution mensuelle de la marge
+Production;01;production/01_couverture_trs;Number;Part des ordres avec TRS mesure
+Production;02;production/02_trs_moyen_non_disponible;Number;Retourne NULL car TRS non calculable dans la source
+Production;03;production/03_ordres_realises_vs_total;Bar;Ordres termines et autres ordres connus
+Production;04;production/04_duree_moyenne_heures;Number;Duree moyenne des ordres termines
+Production;05;production/05_qte_produite_mensuelle;Line;Quantite terminee par mois de planification
+Production;06;production/06_production_par_produit;Bar;Quantite produite par produit
+Production;07;production/07_ordres_par_statut;Donut;Distribution des ordres par statut
+Production;08;production/08_duree_mensuelle;Line;Duree moyenne mensuelle des ordres termines
+Achats;01;achats/01_montant_total;Number;Montant des lignes de commandes confirmees/recues
+Achats;02;achats/02_couverture_delai_livraison;Number;Part des lignes avec delai mesure
+Achats;03;achats/03_couverture_conformite;Number;Indisponible sans date promise/reception
+Achats;04;achats/04_top10_fournisseurs;Bar;Top 10 fournisseurs par montant
+Achats;05;achats/05_montant_mensuel;Line;Evolution mensuelle des achats
+Achats;06;achats/06_montant_par_categorie;Bar;Achats par categorie de produit
+Achats;07;achats/07_commandes_par_statut;Donut;Commandes fournisseurs par statut
+Achats;08;achats/08_quantite_par_fournisseur;Bar;Quantites achetees chez les 10 principaux fournisseurs
+Stocks;01;stocks/01_valeur_stock_estimee;Number;Dernier solde par produit multiplie par cout standard
+Stocks;02;stocks/02_rotation_estimee;Number;Estimation COGS sur valeur moyenne observee
+Stocks;03;stocks/03_produits_solde_negatif;Number;Produits a solde negatif, proxy d'anomalie et non taux de rupture
+Stocks;04;stocks/04_stock_par_entrepot;Bar;Stock et valeur de l'entrepot unique simule
+Stocks;05;stocks/05_mouvements_entrees_sorties;Line;Volumes mensuels entree et sortie
+Stocks;06;stocks/06_top10_valeur_stock;Bar;Top 10 produits en valeur de stock
+Stocks;07;stocks/07_solde_par_produit;Bar;Solde estime par produit
+Stocks;08;stocks/08_mouvements_mensuels;Line;Nombre mensuel de mouvements termines
